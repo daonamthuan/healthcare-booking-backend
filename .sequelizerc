@@ -1,0 +1,8 @@
+const path = require('path');
+
+module.exports = {
+  'config': path.resolve('./src/config', 'config.json'), // thu muc config tu ./src/config, cho thang sequelize biet rang lam sao de ket noi toi database
+  'migrations-path': path.resolve('./src', 'migrations'), // migration: tao bang? trong database
+  'models-path': path.resolve('./src', 'models'), // tao model trong mo hinh MVC
+  'seeders-path': path.resolve('./src', 'seeders') // tao data fake
+}
