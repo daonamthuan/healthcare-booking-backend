@@ -1,4 +1,5 @@
 'use strict';
+require('dotenv').config(); // import vao moi dung duoc "process.env"
 
 const fs = require('fs');
 const path = require('path');
@@ -8,6 +9,13 @@ const env = process.env.NODE_ENV || 'development';
 const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
 
+if (config == null){
+  console.log("config is null");
+} else {
+  console.log('config is not null ');
+}
+
+// create instance to Connect DB
 let sequelize;
 if (config.use_env_variable) {
   sequelize = new Sequelize(process.env[config.use_env_variable], config);
@@ -25,7 +33,7 @@ fs
     db[model.name] = model;
   });
 
-Object.keys(db).forEach(modelName => {
+Object.keys(db).forEach(modelName => { // bao gom cac models trong folder
   if (db[modelName].associate) {
     db[modelName].associate(db);
   }
@@ -34,4 +42,4 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-module.exports = db;
+module.exports = db; // export tat ca model
