@@ -3,6 +3,20 @@ import bcrypt from "bcryptjs";
 
 const salt = bcrypt.genSaltSync(10);
 
+let checkUserEmail = (userEmail) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let user = await db.User.findOne({
+                where: { email: userEmail },
+            });
+            if (user) resolve(true);
+            else resolve(false);
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
+
 let handleUserLogin = (email, password) => {
     // vi ham checkUserEmail tra ve 1 promise nen can thoi gian => can phai cho no thuc thi xong
     return new Promise(async (resolve, reject) => {
@@ -13,7 +27,13 @@ let handleUserLogin = (email, password) => {
                 // user already exist
                 let user = await db.User.findOne({
                     where: { email: email },
-                    attributes: ["email", "roleId", "password"],
+                    attributes: [
+                        "email",
+                        "firstName",
+                        "lastName",
+                        "roleId",
+                        "password",
+                    ],
                     raw: true,
                 });
                 if (user) {
@@ -39,20 +59,6 @@ let handleUserLogin = (email, password) => {
             }
 
             resolve(userData);
-        } catch (err) {
-            reject(err);
-        }
-    });
-};
-
-let checkUserEmail = (userEmail) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let user = await db.User.findOne({
-                where: { email: userEmail },
-            });
-            if (user) resolve(true);
-            else resolve(false);
         } catch (err) {
             reject(err);
         }
@@ -118,9 +124,10 @@ let createNewUser = (data) => {
                     firstName: data.firstName,
                     lastName: data.lastName,
                     address: data.address,
-                    phonenumber: data.phonenumber,
-                    gender: data.gender === "1" ? true : false,
+                    phonenumber: data.phoneNumber,
+                    gender: data.gender,
                     roleId: data.roleId,
+                    positionId: data.positionId,
                 });
             }
 
@@ -156,7 +163,7 @@ let deleteUser = (userId) => {
 let updateUserData = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.id) {
+            if (!data.id || !data.roleId || !data.positionId || !data.gender) {
                 resolve({
                     errCode: 2,
                     errMessage: "Missing required parameters !",
@@ -171,6 +178,10 @@ let updateUserData = (data) => {
                 user.firstName = data.firstName;
                 user.lastName = data.lastName;
                 user.address = data.address;
+                user.roleId = data.roleId;
+                user.positionId = data.positionId;
+                user.gender = data.gender;
+                user.phonenumber = data.phoneNumber;
 
                 await user.save();
 
