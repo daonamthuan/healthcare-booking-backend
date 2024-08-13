@@ -7,6 +7,7 @@ let router = express.Router();
 
 // tat ca route se viet o trong nay
 let initWebRoutes = (app) => {
+    // home
     router.get("/", homeController.getHomePage);
     router.get("/about", homeController.getAboutPage);
     router.get("/crud", homeController.getCRUD);
@@ -16,6 +17,7 @@ let initWebRoutes = (app) => {
     router.post("/put-crud", homeController.putCRUD);
     router.get("/delete-crud", homeController.deleteCRUD);
 
+    // user
     router.post("/api/login", userController.handleLogin);
     router.get("/api/get-all-users", userController.handleGetAllUsers);
     router.post("/api/create-new-user", userController.handleCreateNewUser);
@@ -23,13 +25,17 @@ let initWebRoutes = (app) => {
     router.delete("/api/delete-user", userController.handleDeleteUser);
     router.get("/api/allcode", userController.getAllcode);
 
+    //doctor
     router.get("/api/top-doctor-home", doctorController.getTopDoctorHome);
     router.get("/api/get-all-doctors", doctorController.getAllDoctors);
     router.post("/api/save-infor-doctors", doctorController.postInforDoctor);
-
     router.get(
         "/api/get-detail-doctor-by-id",
         doctorController.getDetailDoctorById
+    );
+    router.post(
+        "/api/bulk-create-schedule",
+        doctorController.bulkCreateSchedule
     );
 
     return app.use("/", router); // api bat dau bang "/"
