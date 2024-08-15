@@ -6,12 +6,17 @@ module.exports = (sequelize, DataTypes) => {
             // ForeignKey: tham chieu den khoa chinh cua ban khac
             // 1 Allcode co the lien ket voi nhieu ban ghi User => lien ket 1-n
             Allcode.hasMany(models.User, {
-                foreignKey: "positionId", // FR cua bang User la "positionId"
+                foreignKey: "positionId", // FK cua bang User la "positionId"
                 as: "positionData",
             });
             Allcode.hasMany(models.User, {
                 foreignKey: "gender",
                 as: "genderData",
+            });
+
+            Allcode.hasMany(models.Schedule, {
+                foreignKey: "timeType",
+                as: "timeTypeData",
             });
         }
     }
