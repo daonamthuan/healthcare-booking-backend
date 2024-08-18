@@ -49,10 +49,10 @@ let getDetailDoctorById = async (req, res) => {
         let infor = await doctorService.getDetailDoctorById(req.query.id);
         return res.status(200).json(infor);
     } catch (err) {
-        console.log("Error when geting doctor detail by ID: ", err);
+        console.log("Error when getting doctor detail by ID: ", err);
         return res.status(200).json({
             errCode: -1,
-            errMessage: "Error when geting doctor detail by ID",
+            errMessage: "Error when getting doctor detail by ID",
         });
     }
 };
@@ -72,16 +72,26 @@ let bulkCreateSchedule = async (req, res) => {
 
 let getScheduleByDate = async (req, res) => {
     try {
-        let infor = await doctorService.getScheduleByDate(
-            req.query.doctorId,
-            req.query.date
-        );
+        let infor = await doctorService.getScheduleByDate(req.query.doctorId, req.query.date);
         return res.status(200).json(infor);
     } catch (err) {
         console.log(err);
         return res.status(200).json({
             errCode: -1,
             errMessage: "Error when get schedule by date",
+        });
+    }
+};
+
+let getExtraInforDoctorById = async (req, res) => {
+    try {
+        let infor = await doctorService.getExtraInforDoctorById(req.query.doctorId);
+        return res.status(200).json(infor);
+    } catch (err) {
+        console.log(err);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: "Error when get extra doctor info",
         });
     }
 };
@@ -93,4 +103,5 @@ module.exports = {
     getDetailDoctorById: getDetailDoctorById,
     bulkCreateSchedule: bulkCreateSchedule,
     getScheduleByDate: getScheduleByDate,
+    getExtraInforDoctorById: getExtraInforDoctorById,
 };

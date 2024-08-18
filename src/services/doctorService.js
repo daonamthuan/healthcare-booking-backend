@@ -1,3 +1,4 @@
+import { where } from "sequelize";
 import db from "../models/index";
 require("dotenv").config();
 import _ from "lodash";
@@ -66,13 +67,19 @@ let saveDetailInfoDoctor = (inputData) => {
                 !inputData.doctorId ||
                 !inputData.contentMarkdown ||
                 !inputData.contentHTML ||
-                !inputData.action
+                !inputData.action ||
+                !inputData.selectedPrice ||
+                !inputData.selectedPayment ||
+                !inputData.selectedProvince ||
+                !inputData.nameClinic ||
+                !inputData.addressClinic
             ) {
                 resolve({
                     errCode: 1,
                     errMessage: "missing parameter",
                 });
             } else {
+                // upsert to "Markdown table"
                 if (inputData.action === "CREATE") {
                     await db.Markdown.create({
                         contentHTML: inputData.contentHTML,
@@ -88,16 +95,43 @@ let saveDetailInfoDoctor = (inputData) => {
 
                     if (doctorMarkdown) {
                         doctorMarkdown.contentHTML = inputData.contentHTML;
-                        doctorMarkdown.contentMarkdown =
-                            inputData.contentMarkdown;
+                        doctorMarkdown.contentMarkdown = inputData.contentMarkdown;
                         doctorMarkdown.description = inputData.description;
                     }
                     await doctorMarkdown.save();
                 }
 
+                // upsert to "Doctor_Infor" table
+                let doctorInfor = await db.Doctor_Infor.findOne({
+                    where: { doctorId: inputData.doctorId },
+                    raw: false, // to get sequelize object => update directly
+                });
+                if (doctorInfor) {
+                    // update
+                    doctorInfor.priceId = inputData.selectedPrice;
+                    doctorInfor.paymentId = inputData.selectedPayment;
+                    doctorInfor.provinceId = inputData.selectedProvince;
+                    doctorInfor.nameClinic = inputData.nameClinic;
+                    doctorInfor.addressClinic = inputData.addressClinic;
+                    doctorInfor.note = inputData.note;
+
+                    await doctorInfor.save();
+                } else {
+                    // create
+                    await db.Doctor_Infor.create({
+                        doctorId: inputData.doctorId,
+                        priceId: inputData.selectedPrice,
+                        paymentId: inputData.selectedPayment,
+                        provinceId: inputData.selectedProvince,
+                        nameClinic: inputData.nameClinic,
+                        addressClinic: inputData.addressClinic,
+                        note: inputData.note,
+                    });
+                }
+
                 resolve({
                     errCode: 0,
-                    errMessage: "save doctor info succeessfuly!",
+                    errMessage: "save doctor info successfully!",
                 });
             }
         } catch (err) {
@@ -123,11 +157,7 @@ let getDetailDoctorById = (inputId) => {
                     include: [
                         {
                             model: db.Markdown,
-                            attributes: [
-                                "contentHTML",
-                                "contentMarkdown",
-                                "description",
-                            ],
+                            attributes: ["contentHTML", "contentMarkdown", "description"],
                         },
                         {
                             model: db.Allcode,
@@ -139,16 +169,36 @@ let getDetailDoctorById = (inputId) => {
                             as: "positionData",
                             attributes: ["valueEn", "valueVi"],
                         },
+                        {
+                            model: db.Doctor_Infor,
+                            attributes: {
+                                exclude: ["id", "doctorId"],
+                            },
+                            include: [
+                                {
+                                    model: db.Allcode,
+                                    as: "priceTypeData",
+                                    attributes: ["valueEn", "valueVi"],
+                                },
+                                {
+                                    model: db.Allcode,
+                                    as: "paymentTypeData",
+                                    attributes: ["valueEn", "valueVi"],
+                                },
+                                {
+                                    model: db.Allcode,
+                                    as: "provinceTypeData",
+                                    attributes: ["valueEn", "valueVi"],
+                                },
+                            ],
+                        },
                     ],
                     raw: false,
                     nest: true,
                 });
 
                 if (dataUser && dataUser.image) {
-                    dataUser.image = new Buffer(
-                        dataUser.image,
-                        "base64"
-                    ).toString("binary");
+                    dataUser.image = new Buffer(dataUser.image, "base64").toString("binary");
                 }
 
                 if (!dataUser) {
@@ -168,12 +218,7 @@ let getDetailDoctorById = (inputId) => {
 let bulkCreateSchedule = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (
-                !data ||
-                !data.arrSchedule ||
-                !data.doctorId ||
-                !data.formattedDate
-            ) {
+            if (!data || !data.arrSchedule || !data.doctorId || !data.formattedDate) {
                 resolve({
                     errCode: 1,
                     errMessage: "Missing required parameters",
@@ -247,6 +292,55 @@ let getScheduleByDate = (doctorId, date) => {
     });
 };
 
+let getExtraInforDoctorById = (idInput) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!idInput) {
+                resolve({
+                    errCode: 1,
+                    errMessage: "Missing required parameter!",
+                });
+            } else {
+                let dataDoctorInfor = await db.Doctor_Infor.findOne({
+                    where: {
+                        doctorId: idInput,
+                    },
+                    attributes: {
+                        exclude: ["id", "doctorId"],
+                    },
+                    include: [
+                        {
+                            model: db.Allcode,
+                            as: "priceTypeData",
+                            attributes: ["valueEn", "valueVi"],
+                        },
+                        {
+                            model: db.Allcode,
+                            as: "paymentTypeData",
+                            attributes: ["valueEn", "valueVi"],
+                        },
+                        {
+                            model: db.Allcode,
+                            as: "provinceTypeData",
+                            attributes: ["valueEn", "valueVi"],
+                        },
+                    ],
+                    raw: false,
+                    nest: true,
+                });
+
+                if (!dataDoctorInfor) {
+                    dataDoctorInfor = {};
+                }
+
+                resolve({ errCode: 0, data: dataDoctorInfor });
+            }
+        } catch (err) {
+            reject(err);
+        }
+    });
+};
+
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -254,4 +348,5 @@ module.exports = {
     getDetailDoctorById: getDetailDoctorById,
     bulkCreateSchedule: bulkCreateSchedule,
     getScheduleByDate: getScheduleByDate,
+    getExtraInforDoctorById: getExtraInforDoctorById,
 };
