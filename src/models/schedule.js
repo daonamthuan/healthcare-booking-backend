@@ -13,6 +13,12 @@ module.exports = (sequelize, DataTypes) => {
                 targetKey: "keyMap", // map voi kepMap cua bang "Allcode"
                 as: "timeTypeData", // tra lai voi ten la "timeTypeData"
             });
+
+            Schedule.belongsTo(models.User, {
+                foreignKey: "doctorId", //FK o ben A (timeType cua bang "Schedule")
+                targetKey: "id", // map voi kepMap cua bang "Allcode"
+                as: "doctorData", // tra lai voi ten la "timeTypeData"
+            });
         }
     }
     Schedule.init(
