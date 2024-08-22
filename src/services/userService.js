@@ -27,13 +27,7 @@ let handleUserLogin = (email, password) => {
                 // user already exist
                 let user = await db.User.findOne({
                     where: { email: email },
-                    attributes: [
-                        "email",
-                        "firstName",
-                        "lastName",
-                        "roleId",
-                        "password",
-                    ],
+                    attributes: ["email", "firstName", "lastName", "roleId", "password"],
                     raw: true,
                 });
                 if (user) {
@@ -92,7 +86,7 @@ let getAllUsers = (userId) => {
     });
 };
 
-let hashUserPasword = (password) => {
+let hashUserPassword = (password) => {
     return new Promise(async (resolve, reject) => {
         try {
             var hashPassword = await bcrypt.hashSync(password, salt);
@@ -111,13 +105,10 @@ let createNewUser = (data) => {
             if (check) {
                 resolve({
                     errCode: 1,
-                    errMessage:
-                        "Your email is already exist, plz try another email !",
+                    errMessage: "Your email is already exist, plz try another email !",
                 });
             } else {
-                let hashPasswordFromBcrypt = await hashUserPasword(
-                    data.password
-                );
+                let hashPasswordFromBcrypt = await hashUserPassword(data.password);
                 await db.User.create({
                     email: data.email,
                     password: hashPasswordFromBcrypt,

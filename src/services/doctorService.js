@@ -198,7 +198,7 @@ let getDetailDoctorById = (inputId) => {
                 });
 
                 if (dataUser && dataUser.image) {
-                    dataUser.image = new Buffer(dataUser.image, "base64").toString("binary");
+                    dataUser.image = new Buffer(dataUser.image, "base64").toString("binary"); // decode: blob to binary string
                 }
 
                 if (!dataUser) {
