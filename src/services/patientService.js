@@ -3,6 +3,7 @@ import db from "../models/index";
 require("dotenv").config();
 import emailService from "./emailService";
 import { v4 as uuidv4 } from "uuid";
+import { add } from "lodash";
 
 let buildUrlEmail = (doctorId, token) => {
     let result = `${process.env.URL_REACT}/verify-booking?token=${token}&doctorId=${doctorId}`;
@@ -13,7 +14,15 @@ let buildUrlEmail = (doctorId, token) => {
 let postBookAppointment = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!data.email || !data.doctorId || !data.date || !data.timeType || !data.fullName) {
+            if (
+                !data.email ||
+                !data.doctorId ||
+                !data.date ||
+                !data.timeType ||
+                !data.fullName ||
+                !data.selectedGender ||
+                !data.address
+            ) {
                 resolve({
                     errCode: 1,
                     errMessage: "Missing required parameter",
@@ -35,6 +44,10 @@ let postBookAppointment = (data) => {
                     defaults: {
                         email: data.email,
                         roleId: "R3",
+                        gender: data.selectedGender,
+                        address: data.address,
+                        phonenumber: data.phoneNumber,
+                        firstName: data.fullName,
                     },
                 });
 
